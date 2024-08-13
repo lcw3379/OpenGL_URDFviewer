@@ -8,7 +8,7 @@ https://www.youtube.com/playlist?list=PLPaoO-vpZnumdcb4tZc4x5Q-v7CkrQ6M-
 
 https://github.com/VictorGordan/opengl-tutorials
 
-해당 튜토리얼을 따라하면서 OpenGL의 기본적인 사용법에 대해 숙지하고 원하는 기능을 만드는 걸 목표로 하였다.
+해당 튜토리얼을 따라하면서 쉐이더의 기초 내용과 렌더링 파이프라인, OpenGL의 기본적인 사용법에 대해 숙지하고 원하는 기능을 만드는 걸 목표로 하였다.
 
 URDF파일을 읽기 위해서 tinyxml을 사용해 xml 파일을 읽고, STL, 조인트 정보 등을 불러와서 OpenGL 상에서 나타내는 기능을 구현하였다.
 
