@@ -12,7 +12,10 @@ https://github.com/VictorGordan/opengl-tutorials
 
 URDF파일을 읽기 위해서 tinyxml을 사용해 xml 파일을 읽고, STL, 조인트 정보 등을 불러와서 OpenGL 상에서 나타내는 기능을 구현하였다.
 
-![image](https://github.com/user-attachments/assets/6a98e086-708a-471e-afb9-1c2119c1e150)
+실행하면 새 창이 하나 나온다. SOLIDWORKS로 제작한 ROS용 패키지 속 URDF파일을 집어넣으면 URDF모델을 출력한다.
+
+![urdfviewer](https://github.com/user-attachments/assets/fb04d410-754d-4c30-9a40-2943e1ba6996)
+
 
 
 개선할 점
@@ -21,4 +24,4 @@ URDF파일을 읽기 위해서 tinyxml을 사용해 xml 파일을 읽고, STL, �
 
 또한 조인트의 입력에 따라 각 링크가 얼만큼 회전하는지 애니메이션을 넣으면 좋겠다는 생각을 했다.
 
-하지만 현재로서는 Main파일의 SetURDF 함수에서 모든 링크의 vertex들을 하나의 vertices에 넣어서 출력을 했는데, 애니메이션을 하려면 링크의 갯수만큼 vertices를 생성해서 회전을 시켜줘야 하겠다.. 훗날 OpenGL을 더 사용할 일이 생기면 더 공부해서 진행해 보아야 겠다.
+하지만 현재로서는 Main파일의 SetURDF 함수에서 모든 링크의 vertex들을 하나의 vertices에 넣어서 출력을 했는데, 애니메이션을 하려면 링크의 갯수만큼 vertices를 생성해서 회전을 시켜줘야 하겠다. 훗날 OpenGL을 더 사용할 일이 생기면 더 공부해서 진행해 보아야 겠다.
