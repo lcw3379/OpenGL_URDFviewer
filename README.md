@@ -10,6 +10,8 @@ GLFW<br/>
 glm<br/>
 tinyxml2<br/>
 Eigen<br/>
+stb<br/>
+khr<br/>
 
 
 졸업작품때 제작한 로봇 팔을 Solidworks에서 URDF로 변환하였다. 하지만 urdf 파일은 보통 리눅스에서 ROS를 위한 파일 형식으로, 윈도우에서 열 수 있는 프로그램이 있으면 어떨까 하고 제작하였다.
