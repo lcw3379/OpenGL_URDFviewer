@@ -1,5 +1,17 @@
 # OpenGL_URDFviewer
 
+개발환경<br/>
+C++<br/>
+Visual Studio 2022
+
+사용 라이브러리<br/>
+glad<br/>
+GLFW<br/>
+glm<br/>
+tinyxml2<br/>
+Eigen<br/>
+
+
 졸업작품때 제작한 로봇 팔을 Solidworks에서 URDF로 변환하였다. 하지만 urdf 파일은 보통 리눅스에서 ROS를 위한 파일 형식으로, 윈도우에서 열 수 있는 프로그램이 있으면 어떨까 하고 제작하였다.
 
 기본적인 OpenGL의 사용법은 해당 유튜브 강의와 깃헙을 공부하였다.
