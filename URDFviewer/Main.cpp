@@ -114,21 +114,8 @@ bool LoadSTL(const std::string& filename, std::vector<Triangle>& triangles) {
 
 	return true;
 }
-float scrollValue = 0.0f; // 스크롤 값
-GLFWwindow* scrollWindow = nullptr; // 스크롤 바가 있는 새 창
-void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
-	if (window == scrollWindow && button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
-		double xpos, ypos;
-		glfwGetCursorPos(window, &xpos, &ypos);
 
-		// xpos를 기반으로 scrollValue 업데이트
-		scrollValue = xpos;
 
-		// 새 창의 제목 업데이트
-		std::string title = "Scroll Value: " + std::to_string(scrollValue);
-		glfwSetWindowTitle(window, title.c_str());
-	}
-}
 
 void SetURDF(std::list<std::string>& filename, std::list<Eigen::Vector3d> xyzvectors, std::list<Eigen::Vector3d> rpyvectors, std::vector<Vertex>& vertices)
 {
@@ -170,63 +157,72 @@ void SetURDF(std::list<std::string>& filename, std::list<Eigen::Vector3d> xyzvec
 	}
 }
 
-
-
+//main함수에 paths를 넘기기 위해 전역변수 droppedFiles 설정.
+std::vector<std::string> droppedFiles; 
+void read_file(GLFWwindow* window, int count, const char** paths)
+{
+	droppedFiles.clear();
+	for (int i = 0; i < count; i++)
+	{
+		droppedFiles.push_back(paths[i]);
+	}
+}
 
 int main()
 {
-	// Initialize GLFW
 	glfwInit();
 
-	// Tell GLFW what version of OpenGL we are using 
-	// In this case we are using OpenGL 3.3
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	// Tell GLFW we are using the CORE profile
-	// So that means we only have the modern functions
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	// Create a GLFWwindow object of 800 by 800 pixels, naming it "YoutubeOpenGL"
-	GLFWwindow* window = glfwCreateWindow(width, height, "URDFviewer", NULL, NULL);
-
-	// Error check if the window fails to create
-	if (window == NULL)
+	GLFWwindow* file_window = glfwCreateWindow(480, 360, "Please drop URDF file made by SOLIDWORKS", NULL, NULL);
+	if (!file_window)
 	{
-		std::cout << "Failed to create GLFW window" << std::endl;
 		glfwTerminate();
-		return -1;
-	}
-	// Introduce the window into the current context
-	glfwMakeContextCurrent(window);
-	scrollWindow = glfwCreateWindow(640, 100, "Scroll Bar Window", NULL, NULL);
-	if (!scrollWindow) {
-		glfwTerminate();
+		std::cout << "error!" << std::endl;
 		return -1;
 	}
 
-	glfwSetMouseButtonCallback(scrollWindow, mouse_button_callback);
-	//Load GLAD so it configures OpenGL
+	glfwMakeContextCurrent(file_window);
+	// 파일 드롭 부분
+	glfwSetDropCallback(file_window, read_file);
+	while (!glfwWindowShouldClose(file_window))
+	{
+		//glClear(GL_COLOR_BUFFER_BIT);
+		glfwSwapBuffers(file_window);
+		glfwPollEvents();
+		if (!droppedFiles.empty()) break;
+	}
+	glfwDestroyWindow(file_window);
+
+
+	if (droppedFiles.empty()) // 파일 체크
+	{
+		std::cout << "File is empty." << std::endl;
+		return -1;
+	}
+
+	GLFWwindow* window = glfwCreateWindow(width, height, "wasd : move, space : up, ctrl : down", NULL, NULL);
+	glfwMakeContextCurrent(window);
 	gladLoadGL();
-	// Specify the viewport of OpenGL in the Window
-	// In this case the viewport goes from x = 0, y = 0, to x = 800, y = 800
+
 	glViewport(0, 0, width, height);
 
-
-
-	// Generates Shader object using shaders default.vert and default.frag
-	Shader shaderProgram("default.vert", "default.frag");
-	// Generates Vertex Array Object and binds it
-
 	LoadURDF urdfLoad;
-    std::list<std::string> stlnames;
-    std::list<Eigen::Vector3d> xyzvectors, rpyvectors;
+	std::list<std::string> stlnames;
+	std::list<Eigen::Vector3d> xyzvectors, rpyvectors;
 	std::vector<Vertex> vertices;
 	std::vector<Triangle> triangles;
-	const char* urdfname = "D:/robotarm_urdf7/urdf/robotarm_urdf7.urdf";
+	const char* urdfname = droppedFiles[0].c_str();
+	std::cout << urdfname << std::endl;
 
-    urdfLoad.Load(urdfname,stlnames,xyzvectors,rpyvectors);
+	//URDF로드 후 vertices에 넣기.
+	urdfLoad.Load(urdfname, stlnames, xyzvectors, rpyvectors);
+	SetURDF(stlnames, xyzvectors, rpyvectors, vertices);
 
-	SetURDF(stlnames, xyzvectors, rpyvectors,vertices);
+
+	Shader shaderProgram("default.vert", "default.frag");
 
 	GLuint vao, vbo;
 	glGenVertexArrays(1, &vao);
@@ -235,36 +231,27 @@ int main()
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), vertices.data(), GL_STATIC_DRAW);
 
-	// Position attribute
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Position));
 	glEnableVertexAttribArray(0);
-	// Normal attribute
+
 	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Normal));
 	glEnableVertexAttribArray(3);
 
-	// Unbind the VAO
+	// Unbind
 	glBindVertexArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 
 
-	// Shader for light cube
 	Shader lightShader("light.vert", "light.frag");
-	// Generates Vertex Array Object and binds it
 	VAO lightVAO;
 	lightVAO.Bind();
-	// Generates Vertex Buffer Object and links it to vertices
 	VBO lightVBO(lightVertices, sizeof(lightVertices));
-	// Generates Element Buffer Object and links it to indices
 	EBO lightEBO(lightIndices, sizeof(lightIndices));
-	// Links VBO attributes such as coordinates and colors to VAO
 	lightVAO.LinkAttrib(lightVBO, 0, 3, GL_FLOAT, 3 * sizeof(float), (void*)0);
-	// Unbind all to prevent accidentally modifying them
 	lightVAO.Unbind();
 	lightVBO.Unbind();
 	lightEBO.Unbind();
-
-
 
 	glm::vec4 lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 	glm::vec3 lightPos = glm::vec3(0.5f, 0.5f, 0.5f);
@@ -275,11 +262,6 @@ int main()
 	glm::mat4 pyramidModel = glm::mat4(1.0f);
 	pyramidModel = glm::translate(pyramidModel, pyramidPos);
 
-
-
-
-
-
 	lightShader.Activate();
 	glUniformMatrix4fv(glGetUniformLocation(lightShader.ID, "model"), 1, GL_FALSE, glm::value_ptr(lightModel));
 	glUniform4f(glGetUniformLocation(lightShader.ID, "lightColor"), lightColor.x, lightColor.y, lightColor.z, lightColor.w);
@@ -288,27 +270,21 @@ int main()
 	glUniform4f(glGetUniformLocation(shaderProgram.ID, "lightColor"), lightColor.x, lightColor.y, lightColor.z, lightColor.w);
 	glUniform3f(glGetUniformLocation(shaderProgram.ID, "lightPos"), lightPos.x, lightPos.y, lightPos.z);
 
-
-
-	// Enables the Depth Buffer
 	glEnable(GL_DEPTH_TEST);
 
-	// Creates camera object
+
 	Camera camera(width, height, glm::vec3(0.0f, 0.0f, 2.0f));
 
-	// Main while loop
-	while (!glfwWindowShouldClose(window)&& !glfwWindowShouldClose(scrollWindow))
+
+	while (!glfwWindowShouldClose(window))
 	{
-		// Specify the color of the background
+
 		glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
-		// Clean the back buffer and depth buffer
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		// Handles camera inputs
+
 		camera.Inputs(window);
 		camera.updateMatrix(45.0f, 0.001f, 200.0f);
-
-
 
 		shaderProgram.Activate();
 
@@ -322,24 +298,17 @@ int main()
 		glBindVertexArray(0);
 
 
-
 		lightShader.Activate();
-		// Export the camMatrix to the Vertex Shader of the light cube
 		camera.Matrix(lightShader, "camMatrix");
 		lightVAO.Bind();
 		glDrawElements(GL_TRIANGLES, sizeof(lightIndices) / sizeof(int), GL_UNSIGNED_INT, 0);
 
 		glfwSwapBuffers(window);
 
-
-
-
 		glfwPollEvents();
 	}
 
 
-
-	// Delete all the objects we've created
 	glDeleteVertexArrays(1, &vao);
 	glDeleteBuffers(1, &vbo);
 
@@ -348,9 +317,8 @@ int main()
 	lightVBO.Delete();
 	lightEBO.Delete();
 	lightShader.Delete();
-	// Delete window before ending the program
+
 	glfwDestroyWindow(window);
-	// Terminate GLFW before ending the program
 	glfwTerminate();
 	return 0;
 }

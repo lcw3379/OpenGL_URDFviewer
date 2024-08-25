@@ -17,18 +17,6 @@ void LoadURDF::ParseInertialData(const XMLElement* pInertial) {
     }
 }
 
-void LoadURDF::ParseVisualData(const XMLElement* pVisual) {
-    if (pVisual) {
-        cout << "  Visual:" << endl;
-        const XMLElement* pGeometry = pVisual->FirstChildElement("geometry");
-        if (pGeometry) {
-
-            const XMLElement* pMesh = pGeometry->FirstChildElement("mesh");
-            if (pMesh) cout << "    Mesh filename: " << pMesh->Attribute("filename") << endl;
-        }
-    }
-}
-
 void LoadURDF::ParseCollisionData(const XMLElement* pCollision) {
     if (pCollision) {
         cout << "  Collision:" << endl;
@@ -41,19 +29,20 @@ void LoadURDF::ParseCollisionData(const XMLElement* pCollision) {
     }
 }
 
-
-
-
 Eigen::Vector3d stringToVector3d(const std::string& s) {
     std::istringstream iss(s);
     double x, y, z;
     iss >> x >> y >> z; // 공백으로 구분된 값을 읽어서 x, y, z에 저장
-    return Eigen::Vector3d(x, y, z); // Eigen::Vector3d 객체 생성 및 반환
+    return Eigen::Vector3d(x, y, z); 
 }
 
 void LoadURDF::Load(const char* filename,std::list<std::string>& stlnames, std::list<Eigen::Vector3d>& xyzvectors, std::list<Eigen::Vector3d>& rpyvectors) {
     XMLDocument doc;
     XMLError eResult = doc.LoadFile(filename);
+    std::string temp_filename(filename);
+
+    std::list<std::string> temp_stlnames;
+
     if (eResult != XML_SUCCESS) {
         cout << "Error loading file!" << endl;
         return;
@@ -79,13 +68,13 @@ void LoadURDF::Load(const char* filename,std::list<std::string>& stlnames, std::
 
             const XMLElement* pMesh = pGeometry->FirstChildElement("mesh");
             if (pMesh) cout << "    Mesh filename: " << pMesh->Attribute("filename") << endl;
+
             stlnames.push_back(pMesh->Attribute("filename"));
         }
 
         const XMLElement* pCollision = pLink->FirstChildElement("collision");
         ParseCollisionData(pCollision);
     }
-
 
     std::list<string> parsedxyzvectors, parsedrpyvectors;
 
@@ -110,29 +99,5 @@ void LoadURDF::Load(const char* filename,std::list<std::string>& stlnames, std::
         rpyvectors.push_back(vec);
     }
 
-
 }
-
-//
-//int main() {
-//    LoadURDF urdfLoad;
-//    std::list<std::string> stlnames;
-//    std::list<Eigen::Vector3d> xyzvectors, rpyvectors;
-//    urdfLoad.Load("D:/robotarm_urdf7/urdf/robotarm_urdf7.urdf",stlnames,xyzvectors,rpyvectors);
-//
-//    for (auto& str : stlnames) {
-//        cout << "테스트1" << str << endl;
-//    }
-//
-//    for (auto& str : xyzvectors) {
-//        cout << "테스트2" << str << endl;
-//    }
-//    for (auto& str : rpyvectors) {
-//        cout << "테스트3" << str << endl;
-//    }
-//
-//
-//    return 0;
-//}
-//
 
